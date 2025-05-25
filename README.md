@@ -40,6 +40,21 @@ PORT=3000
   node index.js;
 ```
 
+# Setting Up React App
+
+1. Move to `React-Frontend` directory
+
+   ```bash
+   cd React-Frontend
+   ```
+
+2. Start Server
+
+```bash
+   npm run dev
+```
+
+The Server will start at http://localhost:5173/
 
 
 
