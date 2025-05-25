@@ -13,11 +13,16 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ---
 
-# Adding Express.js Backend
+#Setting Up the .env file in `Node-Backend`
 
-This project can be expanded by adding an Express.js backend server.
+```bash
+PUBLIC_SUPABASE_URL=<Enter_Supabase_Url>
+PUBLIC_SUPABASE_ANON_KEY=<Enter_Anon_Key>
+GEMINI_KEY=<Enter_Gemini_API_Key>          
+PORT=3000
+```
 
-## How to Setup Express.js
+# How to Setup Express.js
 
 1. Move to `Node-Backend` directory
 
@@ -34,6 +39,8 @@ This project can be expanded by adding an Express.js backend server.
 ```
   node index.js;
 ```
+
+
 
 
 
