@@ -13,7 +13,7 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ---
 
-#Setting Up the .env file in `Node-Backend`
+# Setting Up the .env file in `Node-Backend`
 
 ```bash
 PUBLIC_SUPABASE_URL=<Enter_Supabase_Url>
