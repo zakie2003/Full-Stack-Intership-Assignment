@@ -11,7 +11,7 @@ function App() {
   const getData = async () => {
     setLoading(true);
     try {
-      let response = await axios.get("http://localhost:3000/todo/get_item");
+      let response = await axios.get("https://full-stack-intership-assignment.onrender.com/todo/get_item");
       setItems(response.data.Data);
     } catch (error) {
       console.error("Error fetching items:", error);
@@ -21,14 +21,14 @@ function App() {
   };
 
   const deleteData = async (id) => {
-    await axios.delete(`http://localhost:3000/todo/delete_item/${id}`);
+    await axios.delete(`https://full-stack-intership-assignment.onrender.com/todo/delete_item/${id}`);
     getData();
   };
 
   const insertData = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
-    await axios.post("http://localhost:3000/todo/add_item", { "name": input });
+    await axios.post("https://full-stack-intership-assignment.onrender.com/todo/add_item", { "name": input });
     setInput("");
     getData();
   };
@@ -36,7 +36,7 @@ function App() {
   const summerize = async () => {
     setLoading(true);
     try {
-      let response = await axios.post("http://localhost:3000/todo/summerise_todo");
+      let response = await axios.post("https://full-stack-intership-assignment.onrender.com/todo/summerise_todo");
       setSummary(response.data.message);
       setShowModal(true);
     } catch (error) {
