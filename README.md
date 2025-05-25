@@ -19,8 +19,21 @@ This project can be expanded by adding an Express.js backend server.
 
 ## How to Setup Express.js
 
-1. Create a `backend` folder in your project root:
+1. Move to `Node-Backend` directory
 
    ```bash
-   mkdir backend
-   cd backend
+   cd Node-Backend
+
+2. Run Command
+
+```bash
+   npm install
+```
+3. Start Server
+
+```
+  node index.js;
+```
+
+
+
