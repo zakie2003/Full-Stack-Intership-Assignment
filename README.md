@@ -1,78 +1,26 @@
-React + Vite with Express Backend
-This project provides a minimal setup for a React frontend powered by Vite, integrated with a simple Express.js backend. This allows you to develop full-stack applications with a fast frontend development experience and a robust Node.js API.
+# React + Vite
 
-Project Structure
-The repository is organized into two main parts:
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-your-project-name/
-├── client/          # Your React + Vite frontend application
-└── server/          # Your Express.js backend API
-Features
-Frontend (React + Vite)
-React 18: Modern React for building user interfaces.
-Vite: An incredibly fast build tool for frontend development, offering instant hot module replacement (HMR).
-ESLint: Pre-configured ESLint rules for code quality.
-API Integration: Demonstrates how to fetch data from the Express backend and send data via POST requests.
-Backend (Express.js)
-Express.js: A fast, unopinionated, minimalist web framework for Node.js.
-CORS Enabled: Configured with cors middleware to allow cross-origin requests from the frontend during development.
-dotenv: For managing environment variables securely.
-Simple API Endpoints: Includes example GET and POST routes.
-Getting Started
-Follow these steps to get the project up and running on your local machine.
+Currently, two official plugins are available:
 
-Prerequisites
-Node.js (LTS version recommended)
-npm (comes with Node.js) or Yarn
-Installation and Setup
-Clone the repository:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-Bash
+## Expanding the ESLint configuration
 
-git clone <your-repository-url>
-cd your-project-name
-Install Backend Dependencies:
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 
-Navigate into the server directory and install the necessary packages.
+---
 
-Bash
+# Adding Express.js Backend
 
-cd server
-npm install
-Create Backend Environment File:
+This project can be expanded by adding an Express.js backend server.
 
-In the server directory, create a file named .env and add the following:
+## How to Setup Express.js
 
-PORT=5000
-You can change the port if 5000 is already in use.
+1. Create a `backend` folder in your project root:
 
-Install Frontend Dependencies:
-
-Navigate into the client directory and install its dependencies.
-
-Bash
-
-cd ../client # Go back to the root then into client, or directly if you are in the root
-npm install
-Running the Applications
-You'll need to run both the backend and frontend concurrently.
-
-Start the Backend Server:
-
-Open your first terminal and navigate to the server directory:
-
-Bash
-
-cd server
-npm start
-You should see a message indicating that the server is running (e.g., "Server is running on port 5000").
-
-Start the Frontend Development Server:
-
-Open your second terminal and navigate to the client directory:
-
-Bash
-
-cd client
-npm run dev
-This will start the Vite development server (usually on http://localhost:5173).
+   ```bash
+   mkdir backend
+   cd backend
