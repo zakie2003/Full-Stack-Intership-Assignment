@@ -1,6 +1,7 @@
 import { supabase } from "../connection/supabase_connection.js";
 import { GoogleGenAI } from "@google/genai";
 import {v4 as uuidv4} from "uuid";
+import axios from "axios";
 export const addTodo=async(req,res)=>{
     try{
         const { name } = req.body;
@@ -59,5 +60,17 @@ export const summariseTodo=async(req,res)=>{
     }
     catch(err){
         return res.json({"status":"error","message":err});
+    }
+}
+
+export const sendSlack=async(req,res)=>{
+    try{
+      let response = await axios.post(process.env.SLACK_URL,{
+      text:req.body.text
+    });
+    console.log(response);
+    }
+    catch(err){
+        console.log(err);
     }
 }

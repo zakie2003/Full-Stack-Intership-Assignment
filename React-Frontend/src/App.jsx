@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ReactMarkdown from "react-markdown";
 import axios from "axios";
 
 function App() {
@@ -45,6 +46,13 @@ function App() {
       setLoading(false);
     }
   };
+
+  const sendToSlack=async()=>{
+    let response = await axios.post("http://localhost:3000/todo/sendSlack",{
+      text:summary
+    });
+    console.log(response);
+  }
 
   useEffect(() => {
     getData();
@@ -105,13 +113,23 @@ function App() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-gray-800 p-6 rounded shadow-lg max-w-md w-full relative">
             <h2 className="text-2xl font-semibold mb-4 text-center">Summary</h2>
-            <div className="text-sm text-white whitespace-pre-line">{summary}</div>
-            <button
-              onClick={() => setShowModal(false)}
-              className="mt-6 px-4 py-2 bg-red-600 hover:bg-red-700 rounded w-full"
-            >
-              Close
-            </button>
+            <ReactMarkdown>
+              {summary}
+            </ReactMarkdown>
+            <div className="flex gap-2">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="mt-6 px-4 py-2 bg-red-600 hover:bg-red-700 rounded w-full"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={sendToSlack}
+                  className="mt-6 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded w-full"
+                >
+                  Send To Slack
+                </button>
+            </div>
           </div>
         </div>
       )}
