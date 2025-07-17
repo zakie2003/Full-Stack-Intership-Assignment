@@ -286,6 +286,7 @@ export const assign_okr=async (req, res) => {
         assigned_to,
         start_date,
         end_date,
+        status: "pending",
       },
     ]);
 
@@ -305,7 +306,11 @@ export const get_okrs = async (req, res) => {
   try {
     let queryBuilder = supabase.from("okrs").select("*");
 
-    if (user_id) {
+    if (user_id && team_id) {
+      queryBuilder = queryBuilder
+        .eq("assigned_to", user_id)
+        .eq("team_id", team_id);
+    } else if (user_id) {
       queryBuilder = queryBuilder.eq("assigned_to", user_id);
     } else if (team_id) {
       queryBuilder = queryBuilder.eq("team_id", team_id);
@@ -319,7 +324,7 @@ export const get_okrs = async (req, res) => {
     const { data, error } = await queryBuilder;
 
     if (error) {
-      console.error("Supabase error:", error); // 🔍 Show exact error in terminal
+      console.error("Supabase error:", error);  
       return res.status(500).json({
         status: "error",
         message: "Supabase query failed",
@@ -332,7 +337,7 @@ export const get_okrs = async (req, res) => {
       okrs: data,
     });
   } catch (err) {
-    console.error("Unhandled server error:", err); // 🔍 Full traceback
+    console.error("Unhandled server error:", err);  
     return res.status(500).json({
       status: "error",
       message: "Internal server error",
@@ -340,3 +345,40 @@ export const get_okrs = async (req, res) => {
     });
   }
 };
+
+
+
+export const updateStatusInDB = async (req, res) => {
+   const { user_id, updates } = req.body; 
+  for (const update of updates) {
+    const { id, status } = update;
+    const { error } = await supabase
+      .from("okrs")
+      .update({ status })
+      .eq("id", id)
+      .eq("assigned_to", user_id);  
+
+    if (error) {
+      console.error("Failed to update OKR:", error.message);
+    }
+  }
+};
+
+
+export const summariseTodo=async(req,res)=>{
+    try{
+        const {team_id}=req.body;
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
+        const {data,error}=await supabase.from("okrs").select("*").eq("team_id",team_id);
+        console.log(data);
+        const items=data.map((item,index)=>`${index+1})`+item.title+ item.description);
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: items+".Summerize the given points.",
+        });
+        return res.json({"status":"success","message":response.text});
+    }
+    catch(err){
+        return res.json({"status":"error","message":err});
+    }
+}

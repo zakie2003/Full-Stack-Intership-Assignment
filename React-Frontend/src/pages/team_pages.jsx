@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import NavBar from "../components/navbar";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
+import MemberCard from "../components/MemberCard";
 
 function Teamboard() {
   const location = useLocation();
@@ -23,6 +24,11 @@ function Teamboard() {
   const [endDate, setEndDate] = useState("");
   const [assignedTo, setAssignTo] = useState(""); 
   const [memberOKRs, setMemberOKRs] = useState({});
+  const [showSummaryModal, setSummaryModal] = useState(false);
+  const [summaryText, setSummaryText] = useState("");
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [teamToEdit, setTeamToEdit] = useState(null);
+  const [editedTeamName, setEditedTeamName] = useState("");
 
 
 
@@ -49,7 +55,7 @@ const getTeamMembers = async (teamId) => {
       // Now fetch OKRs for each member
       const okrsMap = {};
       for (const member of fetchedMembers) {
-        const okrResponse = await axios.get(`http://localhost:3000/user/get_okrs?user_id=${member.id}`);
+        const okrResponse = await axios.get(`http://localhost:3000/user/get_okrs?user_id=${member.id}&team_id=${teamId}`);
         okrsMap[member.id] = okrResponse.data.okrs || [];
       }
       setMemberOKRs(okrsMap);
@@ -152,6 +158,46 @@ const handleAssignMember = (memberId) => {
   setShowModal(true);
 };
 
+const handleEditTeam = (team) => {
+  setTeamToEdit(team);
+  setEditedTeamName(team.name);
+  setEditModalOpen(true);
+};
+
+
+const handleUpdateTeam = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await axios.put(
+      `http://localhost:3000/team/update/${teamToEdit.id}`,
+      { name: editedTeamName }
+    );
+
+    if (response.data.status === "success") {
+      await getUserTeams();
+      setEditModalOpen(false);
+      setTeamToEdit(null);
+      setEditedTeamName("");
+    } else {
+      console.error("Failed to update team:", response.data.message);
+    }
+  } catch (err) {
+    console.error("Update team error:", err);
+  }
+};
+
+
+  const summarize = async () => {
+    try {
+      let response = await axios.post("http://localhost:3000/user/summary", {
+        team_id: selectedTeam,
+      });
+      setSummaryText(response.data.message);
+      setSummaryModal(true);  
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
 
   useEffect(() => {
@@ -173,20 +219,80 @@ const handleAssignMember = (memberId) => {
               teams.map((team) => (
                 <li
                   key={team.id}
-                  className={`hover:bg-gray-200 px-3 py-2 rounded cursor-pointer ${
+                  className={`flex justify-between items-center hover:bg-gray-200 px-3 py-2 rounded cursor-pointer ${
                     selectedTeam === team.id ? "bg-gray-300" : ""
                   }`}
-                  onClick={() => {
-                    setSelectedTeam(team.id);
-                    getTeamMembers(team.id);
-                  }}
                 >
-                  {team.name}
+                  <span
+                    onClick={() => {
+                      setSelectedTeam(team.id);
+                      getTeamMembers(team.id);
+                    }}
+                  >
+                    {team.name}
+                  </span>
+                  <button
+                    onClick={() => handleEditTeam(team)}
+                    className="text-blue-500 hover:text-blue-700 text-sm ml-2"
+                  >
+                    ✏️
+                  </button>
                 </li>
               ))
             )}
           </ul>
         </div>
+
+    {showSummaryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white w-96 p-6 rounded shadow-lg relative">
+            <h2 className="text-xl font-semibold mb-4">Summary</h2>
+            <p className="text-gray-800 whitespace-pre-line">{summaryText}</p>
+            <button
+              onClick={() => setSummaryModal(false)}
+              className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+        {editModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-6 w-96 shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Edit Team</h2>
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="text-gray-500 hover:text-red-600 text-xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleUpdateTeam}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Team Name</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border rounded"
+                  value={editedTeamName}
+                  onChange={(e) => setEditedTeamName(e.target.value)}
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              >
+                Update
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-y-auto">
@@ -219,6 +325,9 @@ const handleAssignMember = (memberId) => {
               <>
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-semibold">Team Members</h2>
+                  <button onClick={summarize} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                      Sumerize
+                    </button>
                   <button
                     onClick={() => openModal("add_member")}
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
@@ -230,43 +339,15 @@ const handleAssignMember = (memberId) => {
                   <p className="text-gray-500">No members in this team.</p>
                 ) : (
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {members.map((member) => (
-                    <li key={member.id} className="bg-white p-4 rounded shadow border hover:shadow-md transition">
-                      <h3 className="font-semibold text-gray-800">{member.name}</h3>
-                      <p className="text-gray-500 text-sm">{member.email}</p>
-
-                      {/* Show OKRs if available */}
-                      {memberOKRs[member.id] && memberOKRs[member.id].length > 0 ? (
-                        <div className="mt-2">
-                          <h4 className="text-sm font-semibold text-gray-700 mb-1">OKRs:</h4>
-                          <ul className="list-disc list-inside text-gray-600 text-sm">
-                            {memberOKRs[member.id].map((okr) => (
-                              <li key={okr.id}>
-                                <span className="font-medium">{okr.title}</span> – {okr.description}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-400 mt-2">No OKRs assigned.</p>
-                      )}
-
-                      <div className="flex gap-2 mt-3">
-                        <button
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm"
-                          onClick={() => handleAssignMember(member.id)}
-                        >
-                          Assign Task
-                        </button>
-                        <button
-                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
-                          onClick={() => handleRemoveMember(member.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </li>
-                  ))}
+                      {members.map((member) => (
+                        <MemberCard
+                          key={member.id}
+                          member={member}
+                          okrs={memberOKRs[member.id] || []}
+                          onAssign={handleAssignMember}
+                          onRemove={handleRemoveMember}
+                        />
+                      ))}
                 </ul>
 
 
@@ -282,6 +363,7 @@ const handleAssignMember = (memberId) => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-6 w-96">
+            
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
                 {modalType === "create_team" ? "Create Team" : "Add Member"}
@@ -359,15 +441,50 @@ const handleAssignMember = (memberId) => {
       </div>
 
       {modalType === "create_team" && (
-        <form onSubmit={handleTeamSubmit}>
-          {/* form for create_team */}
+        <form onSubmit={handleTeamSubmit} className="space-y-4 bg-white p-4 rounded shadow-md">
+          <h2 className="text-lg font-semibold text-gray-800">Create New Team</h2>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-1">
+              Team Name
+            </label>
+            <input
+              type="text"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter team name"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
+          >
+            Create Team
+          </button>
         </form>
       )}
 
       {modalType === "add_member" && (
-        <form onSubmit={handleAddMember}>
-          {/* form for add_member */}
+        <form onSubmit={handleAddMember} className="flex items-center gap-4 p-4 bg-white rounded-xl shadow-md border">
+          <input
+            type="text"
+            value={memberID}
+            onChange={(e) => setMemberID(e.target.value)}
+            placeholder="Enter Member ID"
+            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+          />
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition duration-200"
+          >
+            Add
+          </button>
         </form>
+
+
       )}
 
       {modalType === "assign_okr" && (

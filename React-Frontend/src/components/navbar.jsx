@@ -21,7 +21,7 @@ function NavBar() {
       {/* Left section: Logo & Navigation */}
       <div className="flex items-center gap-4">
         <img
-          src="https://www.freepnglogos.com/uploads/spotify-logo-png/file-spotify-logo-png-4.png"
+          src="https://images.websiteplanet.com/wp-content/uploads/2020/08/9-Best-Z-Logos-and-How-to-Make-Your-Own-for-Free-image1.png"
           alt="Logo"
           className="w-8 h-8"
         />

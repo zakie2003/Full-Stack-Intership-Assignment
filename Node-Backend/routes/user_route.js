@@ -1,5 +1,5 @@
 import express from "express";
-import { create_dept, create_organization,create_team, create_user,get_organzation,login ,get_dept,get_teams, get_team_member, add_team_member, remove_from_team, assign_team_member, assign_okr, get_okrs} from "../controller/user_controller.js";
+import { create_dept, create_organization,create_team, create_user,get_organzation,login ,get_dept,get_teams, get_team_member, add_team_member,updateStatusInDB, remove_from_team, assign_team_member, assign_okr, get_okrs, summariseTodo} from "../controller/user_controller.js";
 const userrouter=express.Router();
 
 userrouter.post("/signin",create_user);
@@ -30,6 +30,8 @@ userrouter.get("/get_okrs",get_okrs);
 
 userrouter.delete("/remove_team_member",remove_from_team);
 
+userrouter.patch("/update-task-status",updateStatusInDB);
 
+userrouter.post("/summary",summariseTodo);
 
 export default userrouter;
