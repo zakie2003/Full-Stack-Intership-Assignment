@@ -31,7 +31,7 @@ function DashBoard() {
 
   const handleOrgSubmit = async(e) => {
     e.preventDefault();
-    let response= await axios.post("http://localhost:3000/user/create_org",{orgName,user_id:localStorage.getItem("user_id")});
+    let response= await axios.post("https://full-stack-intership-assignment.onrender.com/user/create_org",{orgName,user_id:localStorage.getItem("user_id")});
     console.log(response);
     closeModal();
   };
@@ -39,7 +39,7 @@ function DashBoard() {
   const handleTeamSubmit = async(e) => {
     e.preventDefault();
     // console.log("Creating Team:", teamName, "Under Org:", teamOrg);
-    let response= await axios.post("http://localhost:3000/user/create_dept",{DeptName:teamName,org_id:teamOrg});
+    let response= await axios.post("https://full-stack-intership-assignment.onrender.com/user/create_dept",{DeptName:teamName,org_id:teamOrg});
     console.log(response.data);
     closeModal();
   };
@@ -47,7 +47,7 @@ function DashBoard() {
 const get_user_org = async () => {
   try {
     const response = await axios.get(
-      `http://localhost:3000/user/get_org?user_id=${localStorage.getItem("user_id")}`
+      `https://full-stack-intership-assignment.onrender.com/user/get_org?user_id=${localStorage.getItem("user_id")}`
     );
 
     if (response.data.status === "success") {
@@ -64,7 +64,7 @@ const get_user_org = async () => {
 
 const fetchDepartments = async (orgId) => {
   try {
-    const response = await axios.get(`http://localhost:3000/user/get_depts?org_id=${orgId}`);
+    const response = await axios.get(`https://full-stack-intership-assignment.onrender.com/user/get_depts?org_id=${orgId}`);
     if (response.data.status === "success") {
       setDepartments(response.data.departments);  
     } else {

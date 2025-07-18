@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import axios from "axios";
+import FullScreenLoader from '../components/Loader'; 
 
 function Login() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true); 
+  const [loading, setLoading] = useState(false);  
 
   const handleSubmit = async () => {
+    setLoading(true);
     try {
       const endpoint = isLogin
-        ? "http://localhost:3000/user/login"
-        : "http://localhost:3000/user/signin";
+        ? "https://full-stack-intership-assignment.onrender.com/user/login"
+        : "https://full-stack-intership-assignment.onrender.com/user/signin";
 
       const payload = isLogin
         ? { email, password }
@@ -26,12 +29,16 @@ function Login() {
       window.location = "/dashboard";
     } catch (error) {
       console.error(error.response?.data || error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md border border-gray-200">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 relative">
+      {loading && <FullScreenLoader />}
+
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md border border-gray-200 z-10">
         <div className="flex mb-6 border-b border-gray-300">
           <button
             onClick={() => setIsLogin(false)}
@@ -52,6 +59,10 @@ function Login() {
         <h2 className="text-xl font-bold text-gray-800 text-center mb-4">
           {isLogin ? "Welcome Back!" : "Create Your Account"}
         </h2>
+
+        <h2 className="text-xl font-bold text-gray-800 text-center mb-4">
+          {isLogin ? "Login using email: example@gmail.com   password: 2003 " : ""}
+        </h2>       
 
         <div className="space-y-4">
           <input

@@ -28,7 +28,7 @@ const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
 
 
-  const hasChanges = Object.keys(editedOkrs).length > 0;
+  let hasChanges = Object.keys(editedOkrs).length > 0;
 
 const handleSave = async () => {
   const updates = Object.entries(editedOkrs).map(([id, status]) => ({
@@ -37,17 +37,18 @@ const handleSave = async () => {
   }));
 
   try {
-    await axios.patch("http://localhost:3000/user/update-task-status", {
+    hasChanges=false;
+    await axios.patch("https://full-stack-intership-assignment.onrender.com/user/update-task-status", {
       user_id: member.id,
       updates,
     });
 
-     
+    
     if (onUpdateStatus) {
       onUpdateStatus(updates, member.id);
     }
 
-    setEditedOkrs({});  
+    setEditedOkrs({});
   } catch (error) {
     console.error("Failed to update OKRs:", error);
     alert("Error saving changes. Please try again.");

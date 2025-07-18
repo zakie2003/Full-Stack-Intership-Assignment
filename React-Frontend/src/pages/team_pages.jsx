@@ -3,6 +3,8 @@ import NavBar from "../components/navbar";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import MemberCard from "../components/MemberCard";
+import FullScreenLoader from "../components/Loader";
+import TeamCard from "../components/Team_card";
 
 function Teamboard() {
   const location = useLocation();
@@ -29,6 +31,8 @@ function Teamboard() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [teamToEdit, setTeamToEdit] = useState(null);
   const [editedTeamName, setEditedTeamName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
 
 
 
@@ -47,19 +51,22 @@ function Teamboard() {
 
 const getTeamMembers = async (teamId) => {
   try {
-    const response = await axios.get(`http://localhost:3000/user/get_team_members?team_id=${teamId}`);
+    setIsLoading(true);
+    const response = await axios.get(
+      `https://full-stack-intership-assignment.onrender.com/user/get_team_members?team_id=${teamId}`
+    );
     if (response.data.status === "success") {
       const fetchedMembers = response.data.members || [];
       setMembers(fetchedMembers);
 
-      // Now fetch OKRs for each member
       const okrsMap = {};
       for (const member of fetchedMembers) {
-        const okrResponse = await axios.get(`http://localhost:3000/user/get_okrs?user_id=${member.id}&team_id=${teamId}`);
+        const okrResponse = await axios.get(
+          `https://full-stack-intership-assignment.onrender.com/user/get_okrs?user_id=${member.id}&team_id=${teamId}`
+        );
         okrsMap[member.id] = okrResponse.data.okrs || [];
       }
       setMemberOKRs(okrsMap);
-
     } else {
       setMembers([]);
       console.error("Failed to fetch members:", response.data.message);
@@ -67,81 +74,106 @@ const getTeamMembers = async (teamId) => {
   } catch (err) {
     setMembers([]);
     console.error("Error fetching members:", err);
+  } finally {
+    setIsLoading(false);
   }
 };
 
 
-  const getUserTeams = async () => {
-    try {
-      if (!department_id) {
-        console.warn("No department ID found.");
-        setTeams([]);
-        return;
-      }
+const getUserTeams = async () => {
+  try {
+    setIsLoading(true);
+    if (!department_id) {
+      console.warn("No department ID found.");
+      setTeams([]);
+      return;
+    }
 
-      const response = await axios.get(
-        `http://localhost:3000/user/get_teams?department_id=${department_id}&user_id=${localStorage.getItem("user_id")}`
-      );
-      if (response.data.status === "success") {
-        setTeams(response.data.teams || []);
-      } else {
-        console.error("Failed to fetch teams:", response.data.message);
-        setTeams([]);
-      }
-    } catch (err) {
-      console.error("Error fetching teams:", err);
+    const response = await axios.get(
+      `https://full-stack-intership-assignment.onrender.com/user/get_teams?department_id=${department_id}&user_id=${localStorage.getItem("user_id")}`
+    );
+
+    if (response.data.status === "success") {
+      setTeams(response.data.teams || []);
+    } else {
+      console.error("Failed to fetch teams:", response.data.message);
       setTeams([]);
     }
-  };
+  } catch (err) {
+    console.error("Error fetching teams:", err);
+    setTeams([]);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
 
-  const handleTeamSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:3000/user/create_team", {
+const handleTeamSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    setIsLoading(true);
+    const response = await axios.post(
+      "https://full-stack-intership-assignment.onrender.com/user/create_team",
+      {
         teamName,
         department_id,
         user_id: localStorage.getItem("user_id"),
-      });
-      if (response.data.status === "success") {
-        await getUserTeams();
-        closeModal();
-      } else {
-        console.error("Error creating team:", response.data.message);
       }
-    } catch (err) {
-      console.error("Create team error:", err);
+    );
+
+    if (response.data.status === "success") {
+      await getUserTeams();
+      closeModal();
+    } else {
+      console.error("Error creating team:", response.data.message);
     }
-  };
+  } catch (err) {
+    console.error("Create team error:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleAddMember = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:3000/user/add_team_member", {
+  e.preventDefault();
+  try {
+    setIsLoading(true);
+    const response = await axios.post(
+      "https://full-stack-intership-assignment.onrender.com/user/add_team_member",
+      {
         team_id: selectedTeam,
-        memberID: memberID,  
-      });
-
-      if (response.data.status === "success") {
-        await getTeamMembers(selectedTeam);
-        closeModal();
-      } else {
-        console.error("Add member error:", response.data.message);
+        memberID: memberID,
       }
-    } catch (err) {
-      console.error("Error adding member:", err);
+    );
+
+    if (response.data.status === "success") {
+      await getTeamMembers(selectedTeam);
+      closeModal();
+    } else {
+      console.error("Add member error:", response.data.message);
     }
-  };
+  } catch (err) {
+    console.error("Error adding member:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
 
 const handleRemoveMember = async (memberId) => {
   try {
-    const response = await axios.delete("http://localhost:3000/user/remove_team_member", {
-      data: {
-        team_id: selectedTeam,
-        memberID: memberId,
-      },
-    });
+    setIsLoading(true);
+    const response = await axios.delete(
+      "https://full-stack-intership-assignment.onrender.com/user/remove_team_member",
+      {
+        data: {
+          team_id: selectedTeam,
+          memberID: memberId,
+        },
+      }
+    );
+
     if (response.data.status === "success") {
       await getTeamMembers(selectedTeam);
     } else {
@@ -149,6 +181,8 @@ const handleRemoveMember = async (memberId) => {
     }
   } catch (err) {
     console.error("Error removing member:", err);
+  } finally {
+    setIsLoading(false);
   }
 };
 
@@ -168,8 +202,9 @@ const handleEditTeam = (team) => {
 const handleUpdateTeam = async (e) => {
   e.preventDefault();
   try {
+    setIsLoading(true);
     const response = await axios.put(
-      `http://localhost:3000/team/update/${teamToEdit.id}`,
+      `https://full-stack-intership-assignment.onrender.com/team/update/${teamToEdit.id}`,
       { name: editedTeamName }
     );
 
@@ -183,28 +218,40 @@ const handleUpdateTeam = async (e) => {
     }
   } catch (err) {
     console.error("Update team error:", err);
+  } finally {
+    setIsLoading(false);
   }
 };
 
 
-  const summarize = async () => {
-    try {
-      let response = await axios.post("http://localhost:3000/user/summary", {
+const summarize = async () => {
+  try {
+    setIsLoading(true);
+    const response = await axios.post("https://full-stack-intership-assignment.onrender.com/user/summary",{
         team_id: selectedTeam,
-      });
-      setSummaryText(response.data.message);
-      setSummaryModal(true);  
-    } catch (err) {
-      console.error(err);
-    }
-  };
+      }
+    );
+    setSummaryText(response.data.message);
+    setSummaryModal(true);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
 
   useEffect(() => {
     getUserTeams();
   }, []);
 
+
+  if(isLoading){
+    return <FullScreenLoader/>
+  }
+
   return (
+
     <div className="h-screen flex flex-col">
       <NavBar />
 
@@ -220,7 +267,7 @@ const handleUpdateTeam = async (e) => {
                 <li
                   key={team.id}
                   className={`flex justify-between items-center hover:bg-gray-200 px-3 py-2 rounded cursor-pointer ${
-                    selectedTeam === team.id ? "bg-gray-300" : ""
+                    selectedTeam === team.id ? "bg-blue-300" : ""
                   }`}
                 >
                   <span
@@ -233,7 +280,7 @@ const handleUpdateTeam = async (e) => {
                   </span>
                   <button
                     onClick={() => handleEditTeam(team)}
-                    className="text-blue-500 hover:text-blue-700 text-sm ml-2"
+                    className="text-blue-500 bg-black rounded hover:text-blue-700 text-sm ml-2"
                   >
                     ✏️
                   </button>
@@ -335,6 +382,12 @@ const handleUpdateTeam = async (e) => {
                     Add Member
                   </button>
                 </div>
+                <TeamCard
+                teamName={teams.find((t) => t.id === selectedTeam)?.name || ""}
+                members={members}
+                memberOKRs={memberOKRs}
+              />
+
                 {members.length === 0 ? (
                   <p className="text-gray-500">No members in this team.</p>
                 ) : (
@@ -492,7 +545,7 @@ const handleUpdateTeam = async (e) => {
           onSubmit={async (e) => {
             e.preventDefault();
             try {
-              const response = await axios.post("http://localhost:3000/user/assign_okr", {
+              const response = await axios.post("https://full-stack-intership-assignment.onrender.com/user/assign_okr", {
                 title: okrTitle,
                 description: okrDescription,
                 team_id: selectedTeam,
